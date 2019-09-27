@@ -1,0 +1,64 @@
+<template>
+  <div v-scroll="onScroll" class="parallax">
+    <slot />
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Parallax',
+  provide () {
+    return {
+      parallax: this.data
+    }
+  },
+  data () {
+    return {
+      data: {
+        height: 0,
+        scrollFactor: 0,
+        width: 0
+      }
+    }
+  },
+  mounted () {
+    this.calcParallax()
+
+    // We're using a `requestAnimationFrame()`
+    // for optimal performance.
+    const eventHandler = () => requestAnimationFrame(this.calcParallax)
+    window.addEventListener('resize', eventHandler)
+    window.addEventListener('scroll', eventHandler)
+    // Remove the scroll hanlder when the
+    // component is destroyed.
+    this.$on(`hook:destroyed`, () => {
+      window.removeEventListener('resize', eventHandler)
+      window.removeEventListener('scroll', eventHandler)
+    })
+  },
+  methods: {
+    onScroll () {
+      const offsetTop = window.scrollY
+      this.scrollFactor = (offsetTop - (this.$el.getBoundingClientRect().top) + 72) * 0.25
+    },
+    calcParallax () {
+      // const containerRect = this.$el.getBoundingClientRect()
+
+      // this.data.height = containerRect.height
+      // this.data.width = containerRect.width
+      // this.data.top = containerRect.top
+
+      // const viewportOffsetTop = containerRect.top
+      // const viewportOffsetBottom = window.innerHeight - viewportOffsetTop
+
+      // this.data.scrollFactor = viewportOffsetBottom / (window.innerHeight + this.data.height)
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+.parallax {
+  overflow: hidden;
+}
+</style>
