@@ -1,88 +1,128 @@
 <template>
-  <v-app>
-    <header class="white pt-4" :style="style.header">
-      <nav class="d-flex align-center px-2" :style="style.nav">
-        <v-btn class="mr-2" icon>
-          <v-icon>{{ icon.menu }}</v-icon>
-        </v-btn>
-        <div class="nav-title">
-          {{ title }}
-        </div>
-        <div class="flex-grow-1" />
-        <v-btn icon>
-          <v-icon>{{ icon.search }}</v-icon>
-        </v-btn>
-        <v-btn icon>
-          <v-icon>{{ icon.more }}</v-icon>
-        </v-btn>
-      </nav>
-    </header>
-    <v-content :style="style.content">
-      <div v-scroll="onScroll" style="overflow: hidden;">
-        <v-img
-          src="https://picsum.photos/1280/720"
-          :aspect-ratio="16/9"
-          :style="{ transform: `translate3d(0, ${offset}px, 0)`, opacity: 1 - (offset / 100 * offset) / 100 }"
+  <v-app v-scroll="handleScroll" v-resize="handleResize">
+    <v-navigation-drawer
+      v-model="drawer"
+      app
+    >
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="nav-title">
+            Application
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            subtext
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+      <v-divider />
+      <v-list
+        dense
+        nav
+      >
+        <v-list-item
+          v-for="item in items"
+          :key="item.title"
+          :to="item.route"
+          link
         >
-          <div class="d-flex align-center justify-center fill-height nav-title" style="font-size:24px;">
-            {{ title }}
-          </div>
-        </v-img>
-      </div>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+    <v-app-bar
+      app
+      elevation="0"
+      hide-on-scroll
+    >
+      <v-app-bar-nav-icon @click="drawer = !drawer" />
+      <div class="flex-grow-1" />
+      <v-btn icon>
+        <v-icon>{{ icon.search }}</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon>{{ icon.more }}</v-icon>
+      </v-btn>
+    </v-app-bar>
+    <v-content ref="content">
       <v-container>
-        <div style="background-color: #fff;height:100vh;">
-          {{ offset }}
+        <div ref="carousel">
+          <v-carousel
+            v-model="handleResize"
+            :height="carouselWidth / (16/9)"
+            continuous
+            cycle
+            hide-delimiters
+            show-arrows-on-hover
+          >
+            <v-carousel-item v-for="n in 3" :key="n">
+              <v-img
+                :aspect-ratio="16/9"
+                :src="'https://picsum.photos/1280/720?random=' + n"
+                :lazy-src="'https://picsum.photos/16/9?random=' + n"
+              >
+                <template v-slot:placeholder>
+                  <v-row
+                    class="fill-height ma-0"
+                    align="center"
+                    justify="center"
+                  >
+                    <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
+                  </v-row>
+                </template>
+              </v-img>
+            </v-carousel-item>
+          </v-carousel>
         </div>
+        {{ carouselWidth }}
+        <nuxt />
+        <div style="height:100vh;" />
       </v-container>
     </v-content>
-    <!--<div class="parallax" :style="style.content">
-      <div class="parallax__layer&#45;&#45;back">
-        <v-img class="parallax__img" src="https://picsum.photos/1280/720" :aspect-ratio="16/9" />
-      </div>
-      <v-container class="parallax__layer&#45;&#45;base">
-        <nuxt />
-        <div style="height:200vh;" />
-      </v-container>
-    </div>-->
   </v-app>
 </template>
 
 <script>
 export default {
-  data () {
-    return {
-      offset: 0,
-      dark: true,
-      title: 'galerie kangxi',
-      icon: {
-        menu: 'mdi-menu',
-        search: 'mdi-magnify',
-        more: 'mdi-dots-vertical'
-      }
-    }
+  data: () => ({
+    offsetTop: 0,
+    carouselWidth: 0,
+    drawer: true,
+    image: 'https://picsum.photos/1280/720',
+    title: 'galerie kangxi',
+    icon: {
+      menu: 'mdi-menu',
+      search: 'mdi-magnify',
+      more: 'mdi-dots-vertical'
+    },
+    items: [
+      { title: 'Accueil', route: { path: '/' } },
+      { title: 'Nouveautés', route: { path: '/latest' } }
+    ]
+  }),
+  computed: {},
+  created () {},
+  mounted () {
+    this.handleScroll()
+    this.$nextTick(() => {
+      this.handleResize()
+    })
   },
-  computed: {
-    style () {
-      return {
-        header: { position: 'fixed', width: '100%', zIndex: '1' },
-        nav: { height: '56px' },
-        content: { marginTop: (56 + 16) + 'px' }
-      }
-    }
-  },
+  updated () {},
+  destroyed () {},
   methods: {
-    onScroll () {
-      // if (window.scrollY >= 1) {
-      //   window.scrollY = 202.5
-      // }
-      // this.offset = ((window.scrollY - this.$el.getBoundingClientRect().top) / this.$el.getBoundingClientRect().height)
-      this.offset = window.scrollY * 0.5
+    handleResize () {
+      this.carouselWidth = this.$refs.carousel.clientWidth
+      // const rect = e.target.getBoundingClientRect()
+      // this.dimensions = {} // x: rect.width, y: rect.height }
+    },
+    handleScroll () {
+      this.offsetTop = window.scrollY
     }
   }
 }
 </script>
 
 <style lang="scss">
-  .App__example-single-element {
-  }
 </style>
